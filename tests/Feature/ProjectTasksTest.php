@@ -75,11 +75,99 @@ class ProjectTasksTest extends TestCase
     {
         $project = ProjectFactory::create();
 
-        $this->actingAs($project->owner)->post($project->path() . '/tasks', ['body' => 'Test Task']);
+        $this->actingAs($project->owner)
+            ->post(
+                $project->path() . '/tasks',
+                [
+                    'body' => 'Test Task'
+                ]
+            );
 
         $this->actingAs($project->owner)
             ->get($project->path())
             ->assertSee('Test Task');
+    }
+
+
+    /**
+     * @test
+     */
+    public function a_task_can_be_updated()
+    {
+        $project = ProjectFactory::withTasks(1)->create();
+
+        $this->actingAs($project->owner)
+            ->patch(
+                $project->tasks->first()->path(),
+                [
+                    'body' => 'Task Updated!'
+                ]
+            );
+
+        $this->assertDatabaseHas('tasks', ['body' => 'Task Updated!']);
+    }
+
+
+
+    /**
+     * @test
+     */
+    public function a_task_can_be_completed()
+    {
+        $project = ProjectFactory::withTasks(1)->create();
+
+        $this->actingAs($project->owner)
+            ->patch(
+                $project->tasks->first()->path(),
+                [
+                    'body' => 'Task Completed!',
+                    'completed' => true
+                ]
+            );
+
+        $this->assertDatabaseHas(
+            'tasks',
+            [
+                'body' => 'Task Completed!',
+                'completed' => true
+            ]
+        );
+    }
+
+
+    /**
+     * @test
+     */
+    public function a_task_can_be_marked_as_incompleted()
+    {
+        $this->withoutExceptionHandling();
+
+        $project = ProjectFactory::withTasks(1)->create();
+
+        $this->actingAs($project->owner)
+            ->patch(
+                $project->tasks->first()->path(),
+                [
+                    'body' => 'Task Updated!',
+                    'completed' => true
+                ]
+            );
+
+        $this->patch(
+            $project->tasks->first()->path(),
+            [
+                'body' => 'Task Updated!',
+                'completed' => false
+            ]
+        );
+
+        $this->assertDatabaseHas(
+            'tasks',
+            [
+                'body' => 'Task Updated!',
+                'completed' => false
+            ]
+        );
     }
 
 
@@ -95,32 +183,5 @@ class ProjectTasksTest extends TestCase
         $this->actingAs($project->owner)
             ->post($project->path() . '/tasks', $attributes)
             ->assertSessionHasErrors('body');
-    }
-
-
-    /**
-     * @test
-     */
-    public function a_task_can_be_updated()
-    {
-        $this->withoutExceptionHandling();
-
-        $project = ProjectFactory::withTasks(1)->create();
-
-        $this->actingAs($project->owner)->patch(
-            $project->tasks[0]->path(),
-            [
-                'body' => 'Task Updated!',
-                'completed' => 1
-            ]
-        );
-
-        $this->assertDatabaseHas(
-            'tasks',
-            [
-                'body' => 'Task Updated!',
-                'completed' => 1
-            ]
-        );
     }
 }

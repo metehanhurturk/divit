@@ -2,6 +2,10 @@
 
 namespace Divit\Providers;
 
+use Divit\Models\Task;
+use Divit\Models\Project;
+use Divit\Observers\TaskObserver;
+use Divit\Observers\ProjectObserver;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -13,7 +17,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        //
+
     }
 
     /**
@@ -23,6 +27,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        //
+        Project::observe(ProjectObserver::class);
+        Task::observe(TaskObserver::class);
     }
 }

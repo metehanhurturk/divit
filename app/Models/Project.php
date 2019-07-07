@@ -15,7 +15,6 @@ class Project extends Model
         'notes'
     ];
 
-
     /**
      * @return string
      */
@@ -52,4 +51,21 @@ class Project extends Model
         return $this->tasks()->create(['body' => $body]);
     }
 
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function activity()
+    {
+        return $this->hasMany(Activity::class);
+    }
+
+
+    /**
+     * @param string $description
+     */
+    public function recordActivity($description)
+    {
+        $this->activity()->create(['description' => $description]);
+    }
 }
